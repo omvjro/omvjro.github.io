@@ -18,7 +18,15 @@ icon = "brand-github"
 [[social]]
 identifier = "wiki"
 name = "DOL wiki"
-url = "https://https://degreesoflewditycn.miraheze.org/wiki/Special:用户贡献/+++嫉妒"
+url = "https://degreesoflewditycn.miraheze.org/wiki/Special:用户贡献/+++嫉妒"
 
 [social.params]
-icon = "home"
+icon = "brand-wikipedia"
+
+[[social]]
+identifier = "para"
+name = "ParaTranz"
+url = "https://paratranz.cn/users/44232"
+
+[social.params]
+icon = "square-rounded-letter-p"
