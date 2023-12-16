@@ -1,0 +1,450 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?><rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom"><channel><title>MediaWiki on 造车车间</title><link>https://omvjro.github.io/categories/mediawiki/</link><description>Recent content in MediaWiki on 造车车间</description><generator>Hugo -- gohugo.io</generator><language>zh-cn</language><lastBuildDate>Sat, 16 Dec 2023 00:00:00 +0000</lastBuildDate><atom:link href="https://omvjro.github.io/categories/mediawiki/index.xml" rel="self" type="application/rss+xml"/><item><title>Mediawiki 语言变体补遗</title><link>https://omvjro.github.io/p/mediawiki-%E8%AF%AD%E8%A8%80%E5%8F%98%E4%BD%93%E8%A1%A5%E9%81%97/</link><pubDate>Sat, 16 Dec 2023 00:00:00 +0000</pubDate><guid>https://omvjro.github.io/p/mediawiki-%E8%AF%AD%E8%A8%80%E5%8F%98%E4%BD%93%E8%A1%A5%E9%81%97/</guid><description>&lt;p>如&lt;a class="link" href="https://omvjro.github.io/p/mediawiki-%e8%af%ad%e8%a8%80%e5%8f%98%e4%bd%93%e6%9d%83%e5%ae%9c%e4%b9%8b%e8%ae%a1/#%e8%a1%a5%e9%81%97" >先前&lt;/a>所述，利用 JavaScript 实现的变体转换存在需要额外创建繁体标题重定向的问题。和更改站点内容语言一样，对于已有一定规模的 wiki 来说，这是很麻烦的一件事。&lt;/p>
+&lt;h2 id="手动创建脚本">手动创建脚本&lt;/h2>
+&lt;p>利用此脚本可以为每个页面添加快速创建繁体重定向的按钮，所依赖的 API 有 jQuery、&lt;a class="link" href="https://github.com/nk2028/opencc-js" target="_blank" rel="noopener"
+>openccjs&lt;/a>，以及 MediaWiki 自身提供的 &lt;a class="link" href="https://www.mediawiki.org/wiki/API:Main_page" target="_blank" rel="noopener"
+>Action API&lt;/a>。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;span class="lnt">25
+&lt;/span>&lt;span class="lnt">26
+&lt;/span>&lt;span class="lnt">27
+&lt;/span>&lt;span class="lnt">28
+&lt;/span>&lt;span class="lnt">29
+&lt;/span>&lt;span class="lnt">30
+&lt;/span>&lt;span class="lnt">31
+&lt;/span>&lt;span class="lnt">32
+&lt;/span>&lt;span class="lnt">33
+&lt;/span>&lt;span class="lnt">34
+&lt;/span>&lt;span class="lnt">35
+&lt;/span>&lt;span class="lnt">36
+&lt;/span>&lt;span class="lnt">37
+&lt;/span>&lt;span class="lnt">38
+&lt;/span>&lt;span class="lnt">39
+&lt;/span>&lt;span class="lnt">40
+&lt;/span>&lt;span class="lnt">41
+&lt;/span>&lt;span class="lnt">42
+&lt;/span>&lt;span class="lnt">43
+&lt;/span>&lt;span class="lnt">44
+&lt;/span>&lt;span class="lnt">45
+&lt;/span>&lt;span class="lnt">46
+&lt;/span>&lt;span class="lnt">47
+&lt;/span>&lt;span class="lnt">48
+&lt;/span>&lt;span class="lnt">49
+&lt;/span>&lt;span class="lnt">50
+&lt;/span>&lt;span class="lnt">51
+&lt;/span>&lt;span class="lnt">52
+&lt;/span>&lt;span class="lnt">53
+&lt;/span>&lt;span class="lnt">54
+&lt;/span>&lt;span class="lnt">55
+&lt;/span>&lt;span class="lnt">56
+&lt;/span>&lt;span class="lnt">57
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-js" data-lang="js">&lt;span class="line">&lt;span class="cl">&lt;span class="nx">$&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kd">function&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// 仅在内容页面启用
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="o">!&lt;/span>&lt;span class="nx">mw&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">config&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">get&lt;/span>&lt;span class="p">(&lt;/span> &lt;span class="s1">&amp;#39;wgIsArticle&amp;#39;&lt;/span> &lt;span class="p">)&lt;/span> &lt;span class="o">||&lt;/span> &lt;span class="nx">mw&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">config&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">get&lt;/span>&lt;span class="p">(&lt;/span> &lt;span class="s1">&amp;#39;wgPageContentModel&amp;#39;&lt;/span> &lt;span class="p">)&lt;/span> &lt;span class="o">!==&lt;/span> &lt;span class="s1">&amp;#39;wikitext&amp;#39;&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">return&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// 检查重定向页面是否已存在
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="kr">const&lt;/span> &lt;span class="nx">ifExist&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">title&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="nb">Promise&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">resolve&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">new&lt;/span> &lt;span class="nx">mw&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">Api&lt;/span>&lt;span class="p">().&lt;/span>&lt;span class="nx">get&lt;/span>&lt;span class="p">({&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">action&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s1">&amp;#39;parse&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">page&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="nx">title&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}).&lt;/span>&lt;span class="nx">done&lt;/span>&lt;span class="p">(()&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">resolve&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}).&lt;/span>&lt;span class="nx">fail&lt;/span>&lt;span class="p">(()&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">resolve&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">0&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// 添加按钮至“Wiki工具”栏，可按需修改
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nx">$&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;#site-tools ul&amp;#39;&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nx">append&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;&amp;lt;li class=&amp;#34;mw-list-item&amp;#34; id=&amp;#34;t-tradredirect&amp;#34;&amp;gt;&amp;lt;a href=&amp;#34;javascript:;&amp;#34;&amp;gt;创建繁体重定向&amp;lt;/a&amp;gt;&amp;lt;/li&amp;gt;&amp;#39;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">document&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">getElementById&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;t-tradredirect&amp;#39;&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nx">addEventListener&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;click&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="kr">async&lt;/span> &lt;span class="p">()&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">const&lt;/span> &lt;span class="nx">msg&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">m&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="nb">document&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">getElementById&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;t-tradredirect&amp;#39;&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nx">innerHTML&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">m&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">msg&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;请稍候&amp;#39;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kd">let&lt;/span> &lt;span class="nx">title&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">mw&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">config&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">get&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;wgPageName&amp;#39;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// 使用了简体 -&amp;gt; 台繁，如有需要也可增添港繁（将 tw 修改为 hk ）
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="kr">const&lt;/span> &lt;span class="nx">converter&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">OpenCC&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">Converter&lt;/span>&lt;span class="p">({&lt;/span> &lt;span class="nx">from&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s1">&amp;#39;cn&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">to&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s1">&amp;#39;tw&amp;#39;&lt;/span> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kd">let&lt;/span> &lt;span class="nx">tradtitle&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">converter&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">title&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nx">tradtitle&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="nx">title&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">msg&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;无需创建繁体重定向&amp;#39;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="kr">await&lt;/span> &lt;span class="nx">ifExist&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">tradtitle&lt;/span>&lt;span class="p">))&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">msg&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;已有繁体重定向&amp;#39;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">log&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="sb">`&lt;/span>&lt;span class="si">${&lt;/span>&lt;span class="nx">tradtitle&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="sb"> =&amp;gt; &lt;/span>&lt;span class="si">${&lt;/span>&lt;span class="nx">title&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="sb">`&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">new&lt;/span> &lt;span class="nx">mw&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">Api&lt;/span>&lt;span class="p">().&lt;/span>&lt;span class="nx">postWithToken&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;csrf&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">action&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s1">&amp;#39;edit&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">text&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="sb">`#重定向 [[&lt;/span>&lt;span class="si">${&lt;/span>&lt;span class="nx">title&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="sb">]]`&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">title&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="nx">tradtitle&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">summary&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="sb">`创建繁体重定向`&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">errorformat&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s1">&amp;#39;plaintext&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}).&lt;/span>&lt;span class="nx">done&lt;/span>&lt;span class="p">(()&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">msg&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;创建成功&amp;#39;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}).&lt;/span>&lt;span class="nx">fail&lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="nx">a&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">b&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">errorThrown&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">msg&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;出错了&amp;#39;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">error&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">errorThrown&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>请注意 MediaWiki 仍然无法使用 ES6 语法，因此可将以上脚本通过油猴等方法加载以使用。&lt;/p>
+&lt;h2 id="gadget">Gadget&lt;/h2>
+&lt;p>可以利用 Gadget 将脚本设置为可供用户启用，便于编辑者自助添加繁体重定向。此外，Gadget 似乎可以使用 ES6 语法。&lt;/p>
+&lt;ul>
+&lt;li>&lt;a class="link" href="https://www.mediawiki.org/wiki/Extension:Gadgets" target="_blank" rel="noopener"
+>Extension:Gadgets&lt;/a>&lt;/li>
+&lt;/ul>
+&lt;h2 id="处理历史遗留问题">处理历史遗留问题&lt;/h2>
+&lt;p>理论上，使用 Pywikibot 可以更妥当地批量处理先前的页面。然而，&lt;a class="link" href="https://doc.wikimedia.org/pywikibot/stable/introduction.html" target="_blank" rel="noopener"
+>Pywikibot 的文档&lt;/a>看上去就很麻烦，而且本人 Python 水平比 JavaScript 更低。鉴于 DOL 中文 wiki 页面尚不算多，直接照前文又画了一个 JavaScript 脚本了事。到 wiki 的 &lt;code>特殊:所有页面&lt;/code>，在每一页打开控制台运行以下脚本即可。&lt;/p>
+&lt;p>建议使用机器人账户进行以下操作。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;span class="lnt">25
+&lt;/span>&lt;span class="lnt">26
+&lt;/span>&lt;span class="lnt">27
+&lt;/span>&lt;span class="lnt">28
+&lt;/span>&lt;span class="lnt">29
+&lt;/span>&lt;span class="lnt">30
+&lt;/span>&lt;span class="lnt">31
+&lt;/span>&lt;span class="lnt">32
+&lt;/span>&lt;span class="lnt">33
+&lt;/span>&lt;span class="lnt">34
+&lt;/span>&lt;span class="lnt">35
+&lt;/span>&lt;span class="lnt">36
+&lt;/span>&lt;span class="lnt">37
+&lt;/span>&lt;span class="lnt">38
+&lt;/span>&lt;span class="lnt">39
+&lt;/span>&lt;span class="lnt">40
+&lt;/span>&lt;span class="lnt">41
+&lt;/span>&lt;span class="lnt">42
+&lt;/span>&lt;span class="lnt">43
+&lt;/span>&lt;span class="lnt">44
+&lt;/span>&lt;span class="lnt">45
+&lt;/span>&lt;span class="lnt">46
+&lt;/span>&lt;span class="lnt">47
+&lt;/span>&lt;span class="lnt">48
+&lt;/span>&lt;span class="lnt">49
+&lt;/span>&lt;span class="lnt">50
+&lt;/span>&lt;span class="lnt">51
+&lt;/span>&lt;span class="lnt">52
+&lt;/span>&lt;span class="lnt">53
+&lt;/span>&lt;span class="lnt">54
+&lt;/span>&lt;span class="lnt">55
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-js" data-lang="js">&lt;span class="line">&lt;span class="cl">&lt;span class="kr">const&lt;/span> &lt;span class="nx">ifExist&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">title&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span> &lt;span class="k">new&lt;/span> &lt;span class="nb">Promise&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">resolve&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">new&lt;/span> &lt;span class="nx">mw&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">Api&lt;/span>&lt;span class="p">().&lt;/span>&lt;span class="nx">get&lt;/span>&lt;span class="p">({&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">action&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s1">&amp;#39;parse&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">page&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="nx">title&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}).&lt;/span>&lt;span class="nx">done&lt;/span>&lt;span class="p">(()&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">resolve&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">1&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}).&lt;/span>&lt;span class="nx">fail&lt;/span>&lt;span class="p">(()&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">resolve&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="mi">0&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// 获取需操作页面的标题
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="kd">let&lt;/span> &lt;span class="nx">link_list&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="p">[];&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nb">document&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">querySelectorAll&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;.mw-allpages-body li a&amp;#39;&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nx">forEach&lt;/span>&lt;span class="p">(&lt;/span> &lt;span class="nx">a&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// 排除重定向页面
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nx">a&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">classList&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">contains&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;mw-redirect&amp;#39;&lt;/span>&lt;span class="p">))&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">return&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kd">let&lt;/span> &lt;span class="nx">title&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">a&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">innerText&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">const&lt;/span> &lt;span class="nx">converter&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">OpenCC&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">Converter&lt;/span>&lt;span class="p">({&lt;/span> &lt;span class="nx">from&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s1">&amp;#39;cn&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">to&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s1">&amp;#39;tw&amp;#39;&lt;/span> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// 排除简繁标题一致页面
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="kd">let&lt;/span> &lt;span class="nx">tradtitle&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">converter&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">title&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nx">tradtitle&lt;/span> &lt;span class="o">==&lt;/span> &lt;span class="nx">title&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="k">return&lt;/span>&lt;span class="p">;&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">link_list&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">push&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">title&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nx">link_list&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">forEach&lt;/span>&lt;span class="p">(&lt;/span> &lt;span class="kr">async&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nx">title&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kr">const&lt;/span> &lt;span class="nx">converter&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">OpenCC&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">Converter&lt;/span>&lt;span class="p">({&lt;/span> &lt;span class="nx">from&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s1">&amp;#39;cn&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">to&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s1">&amp;#39;tw&amp;#39;&lt;/span> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="kd">let&lt;/span> &lt;span class="nx">tradtitle&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">converter&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">title&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="kr">await&lt;/span> &lt;span class="nx">ifExist&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">tradtitle&lt;/span>&lt;span class="p">))&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">log&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="sb">`&lt;/span>&lt;span class="si">${&lt;/span>&lt;span class="nx">tradtitle&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="sb"> =&amp;gt; &lt;/span>&lt;span class="si">${&lt;/span>&lt;span class="nx">title&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="sb">已有繁体重定向`&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">return&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="k">new&lt;/span> &lt;span class="nx">mw&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">Api&lt;/span>&lt;span class="p">().&lt;/span>&lt;span class="nx">postWithToken&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;csrf&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">action&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s1">&amp;#39;edit&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">text&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="sb">`#重定向 [[&lt;/span>&lt;span class="si">${&lt;/span>&lt;span class="nx">title&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="sb">]]`&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">title&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="nx">tradtitle&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">bot&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="kc">true&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="c1">// 标记为机器人操作，避免刷屏
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span> &lt;span class="nx">summary&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="sb">`创建繁体重定向`&lt;/span>&lt;span class="p">,&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">errorformat&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s1">&amp;#39;plaintext&amp;#39;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}).&lt;/span>&lt;span class="nx">done&lt;/span>&lt;span class="p">(()&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">log&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="sb">`&lt;/span>&lt;span class="si">${&lt;/span>&lt;span class="nx">tradtitle&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="sb"> =&amp;gt; &lt;/span>&lt;span class="si">${&lt;/span>&lt;span class="nx">title&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="sb">创建成功`&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">}).&lt;/span>&lt;span class="nx">fail&lt;/span>&lt;span class="p">((&lt;/span>&lt;span class="nx">a&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">b&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">errorThrown&lt;/span>&lt;span class="p">)&lt;/span> &lt;span class="p">=&amp;gt;&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">error&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="sb">`&lt;/span>&lt;span class="si">${&lt;/span>&lt;span class="nx">tradtitle&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="sb"> =&amp;gt; &lt;/span>&lt;span class="si">${&lt;/span>&lt;span class="nx">title&lt;/span>&lt;span class="si">}&lt;/span>&lt;span class="sb">创建出错`&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">console&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">error&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">errorThrown&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div></description></item><item><title>MediaWiki 语言变体权宜之计</title><link>https://omvjro.github.io/p/mediawiki-%E8%AF%AD%E8%A8%80%E5%8F%98%E4%BD%93%E6%9D%83%E5%AE%9C%E4%B9%8B%E8%AE%A1/</link><pubDate>Tue, 28 Nov 2023 00:00:00 +0000</pubDate><guid>https://omvjro.github.io/p/mediawiki-%E8%AF%AD%E8%A8%80%E5%8F%98%E4%BD%93%E6%9D%83%E5%AE%9C%E4%B9%8B%E8%AE%A1/</guid><description>&lt;p>在 &lt;a class="link" href="https://degreesoflewditycn.miraheze.org/" target="_blank" rel="noopener"
+>DOL 中文 wiki&lt;/a> 中，或由于初始设置失误，语言设置为 &lt;code>zh-CN&lt;/code> 而非 &lt;code>zh&lt;/code>。根据 &lt;a class="link" href="https://www.mediawiki.org/wiki/Manual:$wgDisableLangConversion/zh" target="_blank" rel="noopener"
+>MediaWiki 文档&lt;/a>，只有语言设置为 &lt;code>zh&lt;/code> 才能启用自带的变体转换功能（以 &lt;code>$wgDisableLangConversion&lt;/code> 设置）。&lt;/p>
+&lt;h2 id="用户界面语言和站点内容语言">用户界面语言和站点内容语言&lt;/h2>
+&lt;p>首先需由&lt;a class="link" href="https://www.mediawiki.org/wiki/Manual:Language" target="_blank" rel="noopener"
+>文档&lt;/a>明确，MediaWiki 的语言分为三种：&lt;/p>
+&lt;ul>
+&lt;li>站点内容语言（Site content language）&lt;/li>
+&lt;li>用户界面语言（User interface language，API 调用为 &lt;code>mw.user.options.values.language&lt;/code>）&lt;/li>
+&lt;li>页面内容语言（Page content language）&lt;/li>
+&lt;/ul>
+&lt;p>其中页面内容语言极少需要配置，绝大部分情况下，都默认与 &lt;code>站点内容语言&lt;/code> 一致，在此忽略。&lt;/p>
+&lt;p>&lt;code>站点内容语言&lt;/code> 决定了 &lt;code>html&lt;/code> 的 &lt;code>lang&lt;/code> 属性，在默认情况下，也决定了 wiki 具体内容的语言，实际使用上，主要有标题（&lt;code>#firstHeading&lt;/code>）和内容（&lt;code>#mw-content-text&lt;/code>）两部分。&lt;/p>
+&lt;p>&lt;code>用户界面语言&lt;/code> 决定了基础界面的 &lt;code>lang&lt;/code> 属性，这些基础界面也就是“用户界面消息”（User interface message）。用户界面消息大部分由 MediaWiki 自动生成，例如命名空间的“User”（&lt;code>en&lt;/code>）和“用户”（&lt;code>zh&lt;/code>），能够随 &lt;code>用户界面语言&lt;/code> 改变自己改变语言；但有一部分用户界面消息来自 MediaWiki 命名空间，最常用的如 &lt;code>MediaWiki:Sidebar&lt;/code> 为侧边栏（&lt;code>#site-navigation&lt;/code>），其 &lt;code>lang&lt;/code> 属性虽能随 &lt;code>用户界面语言&lt;/code> 改变而改变，具体内容却不会自动变化，需要额外设置用户界面消息。&lt;/p>
+&lt;h2 id="清除用户界面消息缓存">清除用户界面消息缓存&lt;/h2>
+&lt;p>作为往往在每个页面都有使用的内容，用户界面消息有着强大的缓存。根据 &lt;a class="link" href="https://www.mediawiki.org/wiki/Manual:$wgLanguageCode" target="_blank" rel="noopener"
+>MediaWiki 文档&lt;/a>，更改 wiki 语言（&lt;code>$wgLanguageCode&lt;/code>）后，需清除用户界面消息缓存，否则会无法显示新语言界面消息，或新旧语言界面消息混杂。其中提供了两种方法。&lt;/p>
+&lt;p>在 MediaWiki 1.18 及以上，运行&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-shell" data-lang="shell">&lt;span class="line">&lt;span class="cl">&lt;span class="nb">echo&lt;/span> &lt;span class="s1">&amp;#39;MediaWiki\MediaWikiServices::getInstance()-&amp;gt;getMessageCache()-&amp;gt;clear()&amp;#39;&lt;/span> &lt;span class="p">|&lt;/span> php maintenance/eval.php
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>在 MediaWiki 1.18 以下，则手动运行 &lt;code>maintenance/rebuildmessages.php&lt;/code>。&lt;/p>
+&lt;p>然而，在 Miraheze 这样的维基农场中，往往无法如此清除缓存。&lt;/p>
+&lt;h2 id="设置-wgforceuimsgascontentmsg">设置 &lt;code>$wgForceUIMsgAsContentMsg&lt;/code>&lt;/h2>
+&lt;p>经指点并查&lt;a class="link" href="https://www.mediawiki.org/wiki/Manual:$wgForceUIMsgAsContentMsg" target="_blank" rel="noopener"
+>文档&lt;/a>，亦可以设置 &lt;code>$wgForceUIMsgAsContentMsg&lt;/code>，将用户界面消息设置为内容消息，即能够自己转换。&lt;/p>
+&lt;p>显然，在维基农场中，也不可改动这个设置。&lt;/p>
+&lt;h2 id="编写自定义变体脚本">编写自定义变体脚本&lt;/h2>
+&lt;p>试模拟原变体功能，在内容页面右上排按钮（&lt;code>.mw-list-item&lt;/code>）中添加变体按钮，加入全站加载的 &lt;code>MediaWiki:Common.js&lt;/code> 中。&lt;/p>
+&lt;h3 id="opencc-js">opencc-js&lt;/h3>
+&lt;p>&lt;a class="link" href="https://github.com/BYVoid/OpenCC" target="_blank" rel="noopener"
+>OpenCC&lt;/a> 是非常常用的一个简繁转换工具，凭借巨大的词库，可以实现各地不同繁体的转换，故欲以此编写转换脚本。原工具为 npm 包，难以直接使用，但有衍生 JavaScript 版本 &lt;a class="link" href="https://github.com/nk2028/opencc-js" target="_blank" rel="noopener"
+>opencc-js&lt;/a>，此处则使用此版本。&lt;/p>
+&lt;p>摘抄用法如下：&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;span class="lnt">5
+&lt;/span>&lt;span class="lnt">6
+&lt;/span>&lt;span class="lnt">7
+&lt;/span>&lt;span class="lnt">8
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-js" data-lang="js">&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// Set Chinese convert from Traditional (Hong Kong) to Simplified (Mainland China)
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="kr">const&lt;/span> &lt;span class="nx">converter&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">OpenCC&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">Converter&lt;/span>&lt;span class="p">({&lt;/span> &lt;span class="nx">from&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s1">&amp;#39;hk&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">to&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s1">&amp;#39;cn&amp;#39;&lt;/span> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// Set the conversion starting point to the root node, i.e. convert the whole page
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="kr">const&lt;/span> &lt;span class="nx">rootNode&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nb">document&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">documentElement&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// Convert all elements with attributes lang=&amp;#39;zh-HK&amp;#39;. Change attribute value to lang=&amp;#39;zh-CN&amp;#39;
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="kr">const&lt;/span> &lt;span class="nx">HTMLConvertHandler&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">OpenCC&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">HTMLConverter&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">converter&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">rootNode&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s1">&amp;#39;zh-HK&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s1">&amp;#39;zh-CN&amp;#39;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nx">HTMLConvertHandler&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">convert&lt;/span>&lt;span class="p">();&lt;/span> &lt;span class="c1">// Convert -&amp;gt; 汉语
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nx">HTMLConvertHandler&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">restore&lt;/span>&lt;span class="p">();&lt;/span> &lt;span class="c1">// Restore -&amp;gt; 漢語
+&lt;/span>&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>由此按照 &lt;code>lang&lt;/code> 属性转换的特性，可以为需转换内容设置不存在的 &lt;code>lang&lt;/code> 属性，如 &lt;code>zh-to-convert&lt;/code>，实现不影响其他部分的转换；对于易误转换的内容，如 &lt;code>textarea&lt;/code>，也可以设置如 &lt;code>zh-not-convert&lt;/code> 的 &lt;code>lang&lt;/code> 属性，随后用 &lt;code>restore&lt;/code> 方法转回原文。&lt;/p>
+&lt;p>特别是在 MediaWiki 中，需要转换的元素主要为标题（&lt;code>#firstHeading&lt;/code>）、侧边栏（&lt;code>#site-navigation&lt;/code>）、内容（&lt;code>#mw-content-text&lt;/code>），这些部分的特点是具有 MediaWiki 根据 &lt;code>站点内容语言&lt;/code> 或 &lt;code>用户界面语言&lt;/code> 设定设置的 &lt;code>lang&lt;/code> 属性；然而，&lt;code>html&lt;/code> 同样拥有此属性，因此不能直接根据原属性转换。&lt;/p>
+&lt;p>opencc-js 亦支持自定义词典，在 wiki 实际使用中应很有用处，但暂不研究。&lt;/p>
+&lt;h3 id="外部脚本加载问题">外部脚本加载问题&lt;/h3>
+&lt;p>MediaWiki 中，传统的引入外部脚本的方式为使用 &lt;code>mw.loader.load&lt;/code>。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-js" data-lang="js">&lt;span class="line">&lt;span class="cl">&lt;span class="nx">mw&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">loader&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">load&lt;/span>&lt;span class="p">(&lt;/span> &lt;span class="s1">&amp;#39;https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js&amp;#39;&lt;/span> &lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>然而，当网络情况不佳或脚本稍大（如 opencc-js）时，会出现未加载完成的情况。&lt;/p>
+&lt;p>幸而，在 MediaWiki 1.33 中，新增了一种引入外部脚本的方式，为 &lt;code>mw.loader.getScript&lt;/code>，其会传回一个 Promise 对象。无需知道 Promise 对象的含义，只需参考示例代码，就能实现外部脚本加载完后执行函数。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt">1
+&lt;/span>&lt;span class="lnt">2
+&lt;/span>&lt;span class="lnt">3
+&lt;/span>&lt;span class="lnt">4
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-js" data-lang="js">&lt;span class="line">&lt;span class="cl">&lt;span class="nx">mw&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">loader&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">getScript&lt;/span>&lt;span class="p">(&lt;/span> &lt;span class="s1">&amp;#39;https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js&amp;#39;&lt;/span> &lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">.&lt;/span>&lt;span class="nx">then&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kd">function&lt;/span>&lt;span class="p">(){&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="c1">// 之后执行的内容
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;h3 id="只支持-es5-的屑-mediawiki">只支持 ES5 的屑 MediaWiki&lt;/h3>
+&lt;p>调试时可能出现报错，说明只能使用 ES5 语法。ES6 2015 年即推出，目前已经普遍支持，很容易不小心写出来。例如模板字符串、箭头函数等。&lt;/p>
+&lt;blockquote>
+&lt;p>然而，在一些 MediaWiki 网站中，是可以使用 ES6 语法的，关于这一点，尚未搜索到解决方法。&lt;/p>
+&lt;/blockquote>
+&lt;h2 id="结果">结果&lt;/h2>
+&lt;p>以下为暂用的脚本，实现以 &lt;code>localStorage&lt;/code> 存储用户偏好的变体转换，理论上可适用于所有 wiki，只需微调 CSS。&lt;/p>
+&lt;div class="highlight">&lt;div class="chroma">
+&lt;table class="lntable">&lt;tr>&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code>&lt;span class="lnt"> 1
+&lt;/span>&lt;span class="lnt"> 2
+&lt;/span>&lt;span class="lnt"> 3
+&lt;/span>&lt;span class="lnt"> 4
+&lt;/span>&lt;span class="lnt"> 5
+&lt;/span>&lt;span class="lnt"> 6
+&lt;/span>&lt;span class="lnt"> 7
+&lt;/span>&lt;span class="lnt"> 8
+&lt;/span>&lt;span class="lnt"> 9
+&lt;/span>&lt;span class="lnt">10
+&lt;/span>&lt;span class="lnt">11
+&lt;/span>&lt;span class="lnt">12
+&lt;/span>&lt;span class="lnt">13
+&lt;/span>&lt;span class="lnt">14
+&lt;/span>&lt;span class="lnt">15
+&lt;/span>&lt;span class="lnt">16
+&lt;/span>&lt;span class="lnt">17
+&lt;/span>&lt;span class="lnt">18
+&lt;/span>&lt;span class="lnt">19
+&lt;/span>&lt;span class="lnt">20
+&lt;/span>&lt;span class="lnt">21
+&lt;/span>&lt;span class="lnt">22
+&lt;/span>&lt;span class="lnt">23
+&lt;/span>&lt;span class="lnt">24
+&lt;/span>&lt;span class="lnt">25
+&lt;/span>&lt;span class="lnt">26
+&lt;/span>&lt;span class="lnt">27
+&lt;/span>&lt;span class="lnt">28
+&lt;/span>&lt;span class="lnt">29
+&lt;/span>&lt;span class="lnt">30
+&lt;/span>&lt;span class="lnt">31
+&lt;/span>&lt;span class="lnt">32
+&lt;/span>&lt;span class="lnt">33
+&lt;/span>&lt;span class="lnt">34
+&lt;/span>&lt;span class="lnt">35
+&lt;/span>&lt;span class="lnt">36
+&lt;/span>&lt;span class="lnt">37
+&lt;/span>&lt;span class="lnt">38
+&lt;/span>&lt;span class="lnt">39
+&lt;/span>&lt;span class="lnt">40
+&lt;/span>&lt;/code>&lt;/pre>&lt;/td>
+&lt;td class="lntd">
+&lt;pre tabindex="0" class="chroma">&lt;code class="language-js" data-lang="js">&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// 载入 openccjs
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nx">mw&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">loader&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">getScript&lt;/span>&lt;span class="p">(&lt;/span> &lt;span class="s1">&amp;#39;https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js&amp;#39;&lt;/span> &lt;span class="p">)&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">.&lt;/span>&lt;span class="nx">then&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kd">function&lt;/span>&lt;span class="p">(){&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nx">$&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kd">function&lt;/span>&lt;span class="p">(){&lt;/span> &lt;span class="c1">// DOM 加载后操作
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// 设置转换工具，简体 -&amp;gt; 港繁/台繁，台繁 -&amp;gt; 简体
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="kr">const&lt;/span> &lt;span class="nx">cth&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">OpenCC&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">Converter&lt;/span>&lt;span class="p">({&lt;/span> &lt;span class="nx">from&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s1">&amp;#39;cn&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">to&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s1">&amp;#39;hk&amp;#39;&lt;/span> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">const&lt;/span> &lt;span class="nx">ttc&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">OpenCC&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">Converter&lt;/span>&lt;span class="p">({&lt;/span> &lt;span class="nx">from&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s1">&amp;#39;tw&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">to&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s1">&amp;#39;cn&amp;#39;&lt;/span> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">const&lt;/span> &lt;span class="nx">ctt&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nx">OpenCC&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">Converter&lt;/span>&lt;span class="p">({&lt;/span> &lt;span class="nx">from&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s1">&amp;#39;cn&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">to&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="s1">&amp;#39;tw&amp;#39;&lt;/span> &lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// 设置必要的 lang 属性以备后续转换
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nx">$&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;#firstHeading&amp;#39;&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nx">attr&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;lang&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s1">&amp;#39;zh-to-convert&amp;#39;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nx">$&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;#site-navigation ul&amp;#39;&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nx">attr&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;lang&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s1">&amp;#39;zh-to-convert&amp;#39;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nx">$&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;#site-navigation h3&amp;#39;&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nx">attr&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;lang&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s1">&amp;#39;zh-to-convert&amp;#39;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nx">$&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;#mw-content-text&amp;#39;&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nx">attr&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;lang&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s1">&amp;#39;zh-to-convert&amp;#39;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">if&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">$&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;textarea&amp;#39;&lt;/span>&lt;span class="p">))&lt;/span> &lt;span class="p">{&lt;/span> &lt;span class="nx">$&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;textarea&amp;#39;&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nx">attr&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;lang&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s1">&amp;#39;zh-not-convert&amp;#39;&lt;/span>&lt;span class="p">);&lt;/span> &lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// 检查 localStorage 并转换
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="kr">const&lt;/span> &lt;span class="nx">rootNode&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="nb">document&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">documentElement&lt;/span>&lt;span class="p">;&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="kr">const&lt;/span> &lt;span class="nx">HTMLConvertHandler&lt;/span> &lt;span class="o">=&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s2">&amp;#34;cn&amp;#34;&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="nx">OpenCC&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">HTMLConverter&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">ttc&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">rootNode&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s1">&amp;#39;zh-to-convert&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s1">&amp;#39;zh-CN&amp;#39;&lt;/span>&lt;span class="p">),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s2">&amp;#34;hk&amp;#34;&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="nx">OpenCC&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">HTMLConverter&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">cth&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">rootNode&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s1">&amp;#39;zh-to-convert&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s1">&amp;#39;zh-HK&amp;#39;&lt;/span>&lt;span class="p">),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="s2">&amp;#34;tw&amp;#34;&lt;/span>&lt;span class="o">:&lt;/span> &lt;span class="nx">OpenCC&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">HTMLConverter&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">ctt&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">rootNode&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s1">&amp;#39;zh-to-convert&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="s1">&amp;#39;zh-TW&amp;#39;&lt;/span>&lt;span class="p">),&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="k">if&lt;/span> &lt;span class="p">(&lt;/span>&lt;span class="nx">localStorage&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">getItem&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;opencc&amp;#39;&lt;/span>&lt;span class="p">))&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">HTMLConvertHandler&lt;/span>&lt;span class="p">[&lt;/span>&lt;span class="nx">localStorage&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">getItem&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;opencc&amp;#39;&lt;/span>&lt;span class="p">)].&lt;/span>&lt;span class="nx">convert&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">$&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;#opencc&amp;#39;&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nx">val&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">localStorage&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">getItem&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;opencc&amp;#39;&lt;/span>&lt;span class="p">));&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">}&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// 插入样式和按钮
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nx">$&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;&amp;lt;style&amp;gt;.mw-list-item select {color: #68d;padding: inherit;padding-right: 2em;background-color: transparent;cursor: pointer;border: none;}.mw-list-item select:hover {border: none;}&amp;lt;/style&amp;gt;&amp;#39;&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nx">appendTo&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;body&amp;#39;&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="nx">$&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;&amp;lt;li class=&amp;#34;mw-list-item&amp;#34;&amp;gt;&amp;lt;select name=&amp;#34;opencc&amp;#34; id=&amp;#34;opencc&amp;#34;&amp;gt;&amp;lt;option value=&amp;#34;&amp;#34;&amp;gt;不转换&amp;lt;/option&amp;gt;&amp;lt;option value=&amp;#34;cn&amp;#34;&amp;gt;大陆简体&amp;lt;/option&amp;gt;&amp;lt;option value=&amp;#34;hk&amp;#34;&amp;gt;港澳繁体&amp;lt;/option&amp;gt;&amp;lt;option value=&amp;#34;tw&amp;#34;&amp;gt;台湾繁体&amp;lt;/option&amp;gt;&amp;lt;/select&amp;gt;&amp;lt;/li&amp;gt;&amp;#39;&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nx">appendTo&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="nx">$&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;#p-views ul&amp;#39;&lt;/span>&lt;span class="p">));&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">// 用户修改变体后，设置 localStorage 并刷新
+&lt;/span>&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="c1">&lt;/span>&lt;span class="nx">$&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;#opencc&amp;#39;&lt;/span>&lt;span class="p">).&lt;/span>&lt;span class="nx">change&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="kd">function&lt;/span>&lt;span class="p">()&lt;/span> &lt;span class="p">{&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">localStorage&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">setItem&lt;/span>&lt;span class="p">(&lt;/span>&lt;span class="s1">&amp;#39;opencc&amp;#39;&lt;/span>&lt;span class="p">,&lt;/span> &lt;span class="nx">event&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">target&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">value&lt;/span>&lt;span class="p">);&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl"> &lt;span class="nx">location&lt;/span>&lt;span class="p">.&lt;/span>&lt;span class="nx">reload&lt;/span>&lt;span class="p">();&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;span class="line">&lt;span class="cl">&lt;span class="p">});&lt;/span>
+&lt;/span>&lt;/span>&lt;/code>&lt;/pre>&lt;/td>&lt;/tr>&lt;/table>
+&lt;/div>
+&lt;/div>&lt;p>效果如下：&lt;/p>
+&lt;p>&lt;img src="https://p.sda1.dev/14/54b68f6a606d0f24cf6e52e6f530e875/QQ%e6%88%aa%e5%9b%be20231112182613.png"
+loading="lazy"
+alt="效果"
+>&lt;/p>
+&lt;h2 id="补遗">补遗&lt;/h2>
+&lt;blockquote>
+&lt;p>The site content language (&lt;code>ContentLanguage&lt;/code> service in &lt;code>MediaWiki\MediaWikiServices::getContentLanguage&lt;/code>, based on &lt;code>$wgLanguageCode&lt;/code>), which &lt;strong>should generally stay the same as long as the wiki exists&lt;/strong>.&lt;/p>
+&lt;/blockquote>
+&lt;p>最好的方法永远是保证最开始设置正确，权宜之计终归是权宜之计。利用这个脚本，可以实现对页面内容的正确变体转换，然而，在实际使用中，还有一些问题：&lt;/p>
+&lt;ul>
+&lt;li>需要额外创建繁体标题重定向&lt;/li>
+&lt;li>不支持转换后变体的搜索&lt;/li>
+&lt;/ul>
+&lt;p>关于第一点，在&lt;a class="link" href="https://omvjro.github.io/p/mediawiki-%e8%af%ad%e8%a8%80%e5%8f%98%e4%bd%93%e8%a1%a5%e9%81%97/" >这篇文章&lt;/a>中修修补补给出了解决方法。关于第二点，考虑到小 wiki 对搜索正文内容的需求不是很大，暂时只能如此了。&lt;/p></description></item></channel></rss>
