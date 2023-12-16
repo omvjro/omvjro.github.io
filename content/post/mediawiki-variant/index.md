@@ -1,6 +1,6 @@
 ---
-title: "MediaWiki 语言变体另辟蹊径"
-description: 在维基农场上为初始语言并非 zh 的站点添加语言变体功能
+title: "MediaWiki 语言变体权宜之计"
+description: 在维基农场上为初始语言并非 zh 的站点添加语言变体/简繁转换功能
 date: 2023-11-28
 categories:
   - MediaWiki
@@ -21,11 +21,9 @@ tags:
 
 `站点内容语言` 决定了 `html` 的 `lang` 属性，在默认情况下，也决定了 wiki 具体内容的语言，实际使用上，主要有标题（`#firstHeading`）和内容（`#mw-content-text`）两部分。
 
-`用户界面语言` 决定了基础界面的 `lang` 属性，这些基础界面也就是“用户界面消息”（User interface message）。用户界面消息大部分由 MediaWiki 自动生成，例如命名空间的“User”（`en`）和“用户”（`zh`），能够随 `用户界面语言` 改变自己改变语言；但有一部分用户界面消息来自 MediaWiki 命名空间，最常用的如 `MediaWiki:Sidebar` 为侧边栏（`#site-navigation`），其 `lang` 属性虽能随 `用户界面语言` 改变而改变，具体内容却不会变化。
+`用户界面语言` 决定了基础界面的 `lang` 属性，这些基础界面也就是“用户界面消息”（User interface message）。用户界面消息大部分由 MediaWiki 自动生成，例如命名空间的“User”（`en`）和“用户”（`zh`），能够随 `用户界面语言` 改变自己改变语言；但有一部分用户界面消息来自 MediaWiki 命名空间，最常用的如 `MediaWiki:Sidebar` 为侧边栏（`#site-navigation`），其 `lang` 属性虽能随 `用户界面语言` 改变而改变，具体内容却不会自动变化，需要额外设置用户界面消息。
 
-## 清除用户界面信息缓存
-
-> The site content language (`ContentLanguage` service in `MediaWiki\MediaWikiServices::getContentLanguage`, based on `$wgLanguageCode`), which **should generally stay the same as long as the wiki exists**.
+## 清除用户界面消息缓存
 
 作为往往在每个页面都有使用的内容，用户界面消息有着强大的缓存。根据 [MediaWiki 文档](https://www.mediawiki.org/wiki/Manual:$wgLanguageCode)，更改 wiki 语言（`$wgLanguageCode`）后，需清除用户界面消息缓存，否则会无法显示新语言界面消息，或新旧语言界面消息混杂。其中提供了两种方法。
 
@@ -93,26 +91,33 @@ mw.loader.getScript( 'https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full
 
 ### 只支持 ES5 的屑 MediaWiki
 
-调试时可能出现报错，说明只能使用 ES5 语法。ES6 2015 年即推出，目前已经普遍支持，很容易不小心写出来。例如模板字符串、函数以 `=>` 表示等。
+调试时可能出现报错，说明只能使用 ES5 语法。ES6 2015 年即推出，目前已经普遍支持，很容易不小心写出来。例如模板字符串、箭头函数等。
+
+> 然而，在一些 MediaWiki 网站中，是可以使用 ES6 语法的，关于这一点，尚未搜索到解决方法。
 
 ## 结果
 
 以下为暂用的脚本，实现以 `localStorage` 存储用户偏好的变体转换，理论上可适用于所有 wiki，只需微调 CSS。
 
 ```js
+// 载入 openccjs
 mw.loader.getScript( 'https://cdn.jsdelivr.net/npm/opencc-js@1.0.5/dist/umd/full.js' )
 .then(function(){
-$(function(){
+$(function(){ // DOM 加载后操作
+
+// 设置转换工具，简体 -> 港繁/台繁，台繁 -> 简体
 const cth = OpenCC.Converter({ from: 'cn', to: 'hk' });
 const ttc = OpenCC.Converter({ from: 'tw', to: 'cn' });
 const ctt = OpenCC.Converter({ from: 'cn', to: 'tw' });
 
+// 设置必要的 lang 属性以备后续转换
 $('#firstHeading').attr('lang', 'zh-to-convert');
 $('#site-navigation ul').attr('lang', 'zh-to-convert');
 $('#site-navigation h3').attr('lang', 'zh-to-convert');
 $('#mw-content-text').attr('lang', 'zh-to-convert');
 if($('textarea')) { $('textarea').attr('lang', 'zh-not-convert'); }
 
+// 检查 localStorage 并转换
 const rootNode = document.documentElement;
 const HTMLConvertHandler = {
     "cn": OpenCC.HTMLConverter(ttc, rootNode, 'zh-to-convert', 'zh-CN'),
@@ -121,13 +126,14 @@ const HTMLConvertHandler = {
 }
 if (localStorage.getItem('opencc')) {
     HTMLConvertHandler[localStorage.getItem('opencc')].convert();
-}
-
-$('<style>.mw-list-item select {color: #68d;padding: inherit;padding-right: 2em;background-color: transparent;cursor: pointer;border: none;}.mw-list-item select:hover {border: none;}</style>').appendTo('body');
-$('<li class="mw-list-item"><select name="opencc" id="opencc"><option value="">不转换</option><option value="cn">大陆简体</option><option value="hk">港澳繁体</option><option value="tw">台湾繁体</option></select></li>').appendTo($('#p-views ul'));
-if (localStorage.getItem('opencc')) {
     $('#opencc').val(localStorage.getItem('opencc'));
 }
+
+// 插入样式和按钮
+$('<style>.mw-list-item select {color: #68d;padding: inherit;padding-right: 2em;background-color: transparent;cursor: pointer;border: none;}.mw-list-item select:hover {border: none;}</style>').appendTo('body');
+$('<li class="mw-list-item"><select name="opencc" id="opencc"><option value="">不转换</option><option value="cn">大陆简体</option><option value="hk">港澳繁体</option><option value="tw">台湾繁体</option></select></li>').appendTo($('#p-views ul'));
+
+// 用户修改变体后，设置 localStorage 并刷新
 $('#opencc').change(function() {
     localStorage.setItem('opencc', event.target.value);
     location.reload();
@@ -139,3 +145,14 @@ $('#opencc').change(function() {
 效果如下：
 
 ![效果](https://p.sda1.dev/14/54b68f6a606d0f24cf6e52e6f530e875/QQ截图20231112182613.png)
+
+## 补遗
+
+> The site content language (`ContentLanguage` service in `MediaWiki\MediaWikiServices::getContentLanguage`, based on `$wgLanguageCode`), which **should generally stay the same as long as the wiki exists**.
+
+最好的方法永远是保证最开始设置正确，权宜之计终归是权宜之计。利用这个脚本，可以实现对页面内容的正确变体转换，然而，在实际使用中，还有一些问题：
+
+- 需要额外创建繁体标题重定向
+- 不支持转换后变体的搜索
+
+关于第一点，在[这篇文章](/p/mediawiki-语言变体补遗/)中修修补补给出了解决方法。关于第二点，考虑到小 wiki 对搜索正文内容的需求不是很大，暂时只能如此了。
